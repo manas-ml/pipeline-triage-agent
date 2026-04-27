@@ -1,0 +1,56 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/run-results/v5/run-results.json",
+    "dbt_version": "1.7.4",
+    "generated_at": "2026-04-27T08:05:32.000000Z",
+    "invocation_id": "aabbccdd-1234-5678-abcd-000000000001",
+    "env": {}
+  },
+  "elapsed_time": 18.43,
+  "args": {
+    "select": [],
+    "target": "prod"
+  },
+  "results": [
+    {
+      "unique_id": "model.jaffle_shop.stg_orders",
+      "status": "success",
+      "execution_time": 1.23,
+      "failures": null,
+      "message": "CREATE VIEW",
+      "thread_id": "Thread-1",
+      "timing": [],
+      "adapter_response": {"rows_affected": -1}
+    },
+    {
+      "unique_id": "model.jaffle_shop.stg_customers",
+      "status": "success",
+      "execution_time": 0.98,
+      "failures": null,
+      "message": "CREATE VIEW",
+      "thread_id": "Thread-2",
+      "timing": [],
+      "adapter_response": {"rows_affected": -1}
+    },
+    {
+      "unique_id": "model.jaffle_shop.fct_orders",
+      "status": "error",
+      "execution_time": 0.54,
+      "failures": null,
+      "message": "Database Error in model fct_orders (models/marts/fct_orders.sql)\n  column \"order_amount\" does not exist\n  LINE 6:     o.order_amount,\n                 ^\n  HINT: Perhaps you meant to reference the column \"o.amount\".\n  compiled SQL at target/compiled/jaffle_shop/models/marts/fct_orders.sql",
+      "thread_id": "Thread-1",
+      "timing": [],
+      "adapter_response": {}
+    },
+    {
+      "unique_id": "model.jaffle_shop.revenue_summary",
+      "status": "error",
+      "execution_time": 0.12,
+      "failures": null,
+      "message": "Compilation Error in model revenue_summary (models/marts/revenue_summary.sql)\n  Model 'model.jaffle_shop.revenue_summary' (models/marts/revenue_summary.sql) depends on a node named 'stg_payments' which was not found",
+      "thread_id": "Thread-2",
+      "timing": [],
+      "adapter_response": {}
+    }
+  ]
+}
