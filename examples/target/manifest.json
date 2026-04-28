@@ -1,0 +1,163 @@
+{
+  "metadata": {
+    "dbt_schema_version": "https://schemas.getdbt.com/dbt/manifest/v10/manifest.json",
+    "dbt_version": "1.7.4",
+    "generated_at": "2026-04-27T08:00:00.000000Z",
+    "invocation_id": "aabbccdd-1234-5678-abcd-000000000001",
+    "env": {}
+  },
+  "nodes": {
+    "model.jaffle_shop.stg_orders": {
+      "unique_id": "model.jaffle_shop.stg_orders",
+      "name": "stg_orders",
+      "resource_type": "model",
+      "path": "staging/stg_orders.sql",
+      "original_file_path": "models/staging/stg_orders.sql",
+      "fqn": ["jaffle_shop", "staging", "stg_orders"],
+      "depends_on": {"nodes": [], "macros": []},
+      "refs": [],
+      "sources": [["raw", "orders"]],
+      "config": {"materialized": "view", "schema": "staging"},
+      "description": "Staged orders from the raw source",
+      "raw_code": "select\n    id as order_id,\n    customer_id,\n    status,\n    order_date,\n    amount\nfrom {{ source('raw', 'orders') }}",
+      "compiled_code": "select\n    id as order_id,\n    customer_id,\n    status,\n    order_date,\n    amount\nfrom raw.public.orders",
+      "columns": {
+        "order_id": {"name": "order_id", "description": "Primary key"},
+        "customer_id": {"name": "customer_id", "description": "FK to customers"},
+        "status": {"name": "status", "description": "Order status"},
+        "order_date": {"name": "order_date", "description": "Date order was placed"},
+        "amount": {"name": "amount", "description": "Order total amount"}
+      }
+    },
+    "model.jaffle_shop.stg_customers": {
+      "unique_id": "model.jaffle_shop.stg_customers",
+      "name": "stg_customers",
+      "resource_type": "model",
+      "path": "staging/stg_customers.sql",
+      "original_file_path": "models/staging/stg_customers.sql",
+      "fqn": ["jaffle_shop", "staging", "stg_customers"],
+      "depends_on": {"nodes": [], "macros": []},
+      "refs": [],
+      "sources": [["raw", "customers"]],
+      "config": {"materialized": "view", "schema": "staging"},
+      "description": "Staged customers from the raw source",
+      "raw_code": "select\n    id as customer_id,\n    first_name,\n    last_name,\n    email,\n    created_at\nfrom {{ source('raw', 'customers') }}",
+      "compiled_code": "select\n    id as customer_id,\n    first_name,\n    last_name,\n    email,\n    created_at\nfrom raw.public.customers",
+      "columns": {}
+    },
+    "model.jaffle_shop.fct_orders": {
+      "unique_id": "model.jaffle_shop.fct_orders",
+      "name": "fct_orders",
+      "resource_type": "model",
+      "path": "marts/fct_orders.sql",
+      "original_file_path": "models/marts/fct_orders.sql",
+      "fqn": ["jaffle_shop", "marts", "fct_orders"],
+      "depends_on": {
+        "nodes": [
+          "model.jaffle_shop.stg_orders",
+          "model.jaffle_shop.stg_customers"
+        ],
+        "macros": []
+      },
+      "refs": [["stg_orders"], ["stg_customers"]],
+      "sources": [],
+      "config": {"materialized": "table", "schema": "marts"},
+      "description": "Core orders fact table",
+      "raw_code": "select\n    o.order_id,\n    o.customer_id,\n    o.order_date,\n    o.status,\n    o.order_amount,\n    c.first_name,\n    c.last_name,\n    c.email\nfrom {{ ref('stg_orders') }} o\nleft join {{ ref('stg_customers') }} c\n    on o.customer_id = c.customer_id",
+      "compiled_code": "select\n    o.order_id,\n    o.customer_id,\n    o.order_date,\n    o.status,\n    o.order_amount,\n    c.first_name,\n    c.last_name,\n    c.email\nfrom jaffle_shop.staging.stg_orders o\nleft join jaffle_shop.staging.stg_customers c\n    on o.customer_id = c.customer_id",
+      "columns": {}
+    },
+    "model.jaffle_shop.revenue_summary": {
+      "unique_id": "model.jaffle_shop.revenue_summary",
+      "name": "revenue_summary",
+      "resource_type": "model",
+      "path": "marts/revenue_summary.sql",
+      "original_file_path": "models/marts/revenue_summary.sql",
+      "fqn": ["jaffle_shop", "marts", "revenue_summary"],
+      "depends_on": {
+        "nodes": [
+          "model.jaffle_shop.fct_orders",
+          "model.jaffle_shop.stg_payment_methods"
+        ],
+        "macros": []
+      },
+      "refs": [["fct_orders"], ["stg_payments"]],
+      "sources": [],
+      "config": {"materialized": "table", "schema": "marts"},
+      "description": "Daily revenue summary",
+      "raw_code": "select\n    o.order_date,\n    count(o.order_id) as order_count,\n    sum(o.order_amount) as total_revenue,\n    p.payment_method\nfrom {{ ref('fct_orders') }} o\nleft join {{ ref('stg_payments') }} p\n    on o.order_id = p.order_id\ngroup by 1, 4",
+      "compiled_code": null,
+      "columns": {}
+    },
+    "model.jaffle_shop.stg_payment_methods": {
+      "unique_id": "model.jaffle_shop.stg_payment_methods",
+      "name": "stg_payment_methods",
+      "resource_type": "model",
+      "path": "staging/stg_payment_methods.sql",
+      "original_file_path": "models/staging/stg_payment_methods.sql",
+      "fqn": ["jaffle_shop", "staging", "stg_payment_methods"],
+      "depends_on": {"nodes": [], "macros": []},
+      "refs": [],
+      "sources": [["raw", "payments"]],
+      "config": {"materialized": "view", "schema": "staging"},
+      "description": "Staged payment methods (renamed from stg_payments)",
+      "raw_code": "select\n    id as payment_id,\n    order_id,\n    payment_method,\n    amount\nfrom {{ source('raw', 'payments') }}",
+      "compiled_code": "select\n    id as payment_id,\n    order_id,\n    payment_method,\n    amount\nfrom raw.public.payments",
+      "columns": {}
+    }
+  },
+  "sources": {
+    "source.jaffle_shop.raw.orders": {
+      "unique_id": "source.jaffle_shop.raw.orders",
+      "name": "orders",
+      "source_name": "raw",
+      "schema": "public",
+      "database": "raw",
+      "description": "Raw orders from the application database"
+    },
+    "source.jaffle_shop.raw.customers": {
+      "unique_id": "source.jaffle_shop.raw.customers",
+      "name": "customers",
+      "source_name": "raw",
+      "schema": "public",
+      "database": "raw",
+      "description": "Raw customers from the application database"
+    },
+    "source.jaffle_shop.raw.payments": {
+      "unique_id": "source.jaffle_shop.raw.payments",
+      "name": "payments",
+      "source_name": "raw",
+      "schema": "public",
+      "database": "raw",
+      "description": "Raw payments from the payments processor"
+    }
+  },
+  "parent_map": {
+    "model.jaffle_shop.stg_orders": [],
+    "model.jaffle_shop.stg_customers": [],
+    "model.jaffle_shop.stg_payment_methods": [],
+    "model.jaffle_shop.fct_orders": [
+      "model.jaffle_shop.stg_orders",
+      "model.jaffle_shop.stg_customers"
+    ],
+    "model.jaffle_shop.revenue_summary": [
+      "model.jaffle_shop.fct_orders",
+      "model.jaffle_shop.stg_payment_methods"
+    ]
+  },
+  "child_map": {
+    "model.jaffle_shop.stg_orders": [
+      "model.jaffle_shop.fct_orders"
+    ],
+    "model.jaffle_shop.stg_customers": [
+      "model.jaffle_shop.fct_orders"
+    ],
+    "model.jaffle_shop.stg_payment_methods": [
+      "model.jaffle_shop.revenue_summary"
+    ],
+    "model.jaffle_shop.fct_orders": [
+      "model.jaffle_shop.revenue_summary"
+    ],
+    "model.jaffle_shop.revenue_summary": []
+  }
+}
