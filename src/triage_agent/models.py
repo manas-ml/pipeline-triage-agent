@@ -157,6 +157,11 @@ class RemediationStep(BaseModel):
     rationale: str
 
 
+class FileFix(BaseModel):
+    file_path: str
+    content: str
+
+
 class TriageReport(BaseModel):
     failure_type: str
     severity: str
@@ -164,8 +169,7 @@ class TriageReport(BaseModel):
     affected_models: list[str] = []
     upstream_cause: Optional[str] = None
     remediation_steps: list[RemediationStep] = []
-    generated_fix: Optional[str] = None
-    fix_file_path: Optional[str] = None
+    fixes: list[FileFix] = []
     investigation_summary: str = ""
     confidence: float = 0.0
 
@@ -197,8 +201,10 @@ class TriageReport(BaseModel):
                     lines.append(f"```bash\n{s.command}\n```")
                 lines.append(f"_{s.rationale}_")
                 lines.append("")
-        if self.generated_fix:
-            lines += ["## Generated Fix", "", "```sql", self.generated_fix, "```", ""]
+        if self.fixes:
+            lines += ["## Generated Fixes", ""]
+            for fix in self.fixes:
+                lines += [f"### `{fix.file_path}`", "", "```sql", fix.content, "```", ""]
         if self.investigation_summary:
             lines += ["## Investigation Summary", "", self.investigation_summary, ""]
         return "\n".join(lines)

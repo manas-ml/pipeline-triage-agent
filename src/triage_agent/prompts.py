@@ -94,10 +94,13 @@ def build_initial_user_message(triage_input: TriageInput) -> str:
         parts += [
             "",
             "**Autofix mode is ON.** When you call `submit_triage_report`:",
-            "- Set `generated_fix` to the **complete corrected file content** (not a snippet).",
-            "- Set `fix_file_path` to the model's `original_file_path` as returned by "
-            "`get_model_sql` or `get_error_context` (e.g. `models/orders.sql`).",
-            "- Only populate these fields if you are confident the fix is correct.",
+            "- Populate `fixes` with one entry per file that needs to change.",
+            "- Each entry must have `file_path` (the model's `original_file_path` from the "
+            "manifest, e.g. `models/orders.sql`) and `content` (the **complete corrected file "
+            "content** — not a snippet).",
+            "- Include all independently broken models. Do NOT include cascade victims — they "
+            "will recover automatically once their upstream is fixed.",
+            "- Only populate `fixes` if you are confident the fix is correct.",
         ]
 
     parts += [

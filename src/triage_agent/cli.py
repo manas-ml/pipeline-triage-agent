@@ -163,19 +163,20 @@ def triage(
     else:
         click.echo(content)
 
-    if autofix and report.generated_fix and report.fix_file_path:
-        if not manifest:
+    if autofix:
+        if not report.fixes:
+            click.echo("Autofix: agent did not produce a fix for this failure type.", err=True)
+        elif not manifest:
             click.echo("Warning: --autofix requires --manifest to resolve file paths.", err=True)
         else:
             project_root = Path(manifest).parent.parent
-            target_file = project_root / report.fix_file_path
-            if not target_file.exists():
-                click.echo(f"Autofix: target file not found: {target_file}", err=True)
-            else:
-                target_file.write_text(report.generated_fix)
-                click.echo(f"Autofix applied: {target_file}", err=True)
-    elif autofix and not report.generated_fix:
-        click.echo("Autofix: agent did not produce a fix for this failure type.", err=True)
+            for fix in report.fixes:
+                target_file = project_root / fix.file_path
+                if not target_file.exists():
+                    click.echo(f"Autofix: target file not found: {target_file}", err=True)
+                else:
+                    target_file.write_text(fix.content)
+                    click.echo(f"Autofix applied: {target_file}", err=True)
 
 
 @cli.command()

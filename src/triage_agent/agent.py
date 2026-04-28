@@ -16,7 +16,7 @@ from typing import Any
 import anthropic
 
 from .cache import build_system_blocks
-from .models import RemediationStep, TriageInput, TriageReport
+from .models import FileFix, RemediationStep, TriageInput, TriageReport
 from .prompts import build_initial_user_message
 from .tool_schemas import TOOLS
 from .tools import TOOL_REGISTRY
@@ -169,6 +169,11 @@ class DbtTriageAgent:
                     rationale=s.get("rationale", ""),
                 )
             )
+        fixes = [
+            FileFix(file_path=f["file_path"], content=f["content"])
+            for f in data.get("fixes", [])
+            if f.get("file_path") and f.get("content")
+        ]
         return TriageReport(
             failure_type=data.get("failure_type", "unknown"),
             severity=data.get("severity", "medium"),
@@ -176,8 +181,7 @@ class DbtTriageAgent:
             affected_models=data.get("affected_models", []),
             upstream_cause=data.get("upstream_cause"),
             remediation_steps=steps,
-            generated_fix=data.get("generated_fix"),
-            fix_file_path=data.get("fix_file_path"),
+            fixes=fixes,
             investigation_summary=data.get("investigation_summary", ""),
             confidence=float(data.get("confidence", 0.0)),
         )

@@ -173,20 +173,29 @@ TOOLS = [
                     },
                     "description": "Ordered list of concrete remediation steps.",
                 },
-                "generated_fix": {
-                    "type": "string",
+                "fixes": {
+                    "type": "array",
                     "description": (
-                        "If applicable, the complete corrected file content that fixes the issue. "
-                        "When autofix mode is active, this must be the full file — not a snippet."
+                        "List of files to fix. Each entry has a file_path (the original_file_path "
+                        "from the manifest, e.g. 'models/orders.sql') and content (the complete "
+                        "corrected file content — not a snippet). Include one entry per file that "
+                        "needs to change. Only populate when autofix mode is active and you are "
+                        "confident the fix is correct."
                     ),
-                },
-                "fix_file_path": {
-                    "type": "string",
-                    "description": (
-                        "The original_file_path of the model to be fixed (as returned by "
-                        "get_model_sql or get_error_context), e.g. 'models/orders.sql'. "
-                        "Required when generated_fix contains a complete file fix."
-                    ),
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "file_path": {
+                                "type": "string",
+                                "description": "Relative path to the file, e.g. 'models/orders.sql'",
+                            },
+                            "content": {
+                                "type": "string",
+                                "description": "Complete corrected file content.",
+                            },
+                        },
+                        "required": ["file_path", "content"],
+                    },
                 },
                 "investigation_summary": {
                     "type": "string",
